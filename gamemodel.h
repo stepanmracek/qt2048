@@ -6,6 +6,9 @@
 class GameModel : public QAbstractListModel
 {
 	Q_OBJECT
+
+	Q_PROPERTY(int score READ score WRITE setScore NOTIFY scoreChanged)
+
 public:
 	explicit GameModel(int size, QObject *parent = nullptr);
 
@@ -22,7 +25,7 @@ public:
 	QVariant data(const QModelIndex &index, int role) const;
 	int data(int row, int col) const;
 	bool setData(const QModelIndex &index, const QVariant &value, int role);
-	void setData(int row, int col, int value);
+	bool setData(int row, int col, int value);
 	Qt::ItemFlags flags(const QModelIndex &index) const;
 
 	enum RoleNames {
@@ -31,12 +34,20 @@ public:
 
 	void print();
 
-	Q_INVOKABLE void playerMove(int direction);
+	Q_INVOKABLE bool playerMove(int direction);
 	Q_INVOKABLE bool computerMove();
 	Q_INVOKABLE int size() { return _size; }
+	Q_INVOKABLE void reset();
+
+	void setScore(int score);
+	int score();
+
+signals:
+	void scoreChanged(int score);
 
 private:
 	int _size;
+	int _score;
 	QVector<int> _data;
 };
 

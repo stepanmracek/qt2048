@@ -5,23 +5,23 @@ Item {
     focus: true
 
     Keys.onLeftPressed: {
-        game.playerMove(0);
-        game.computerMove();
+        if (game.playerMove(0))
+            game.computerMove();
     }
 
     Keys.onRightPressed: {
-        game.playerMove(1);
-        game.computerMove();
+        if (game.playerMove(1))
+            game.computerMove();
     }
 
     Keys.onUpPressed: {
-        game.playerMove(2);
-        game.computerMove();
+        if (game.playerMove(2))
+            game.computerMove();
     }
 
     Keys.onDownPressed: {
-        game.playerMove(3);
-        game.computerMove();
+        if (game.playerMove(3))
+            game.computerMove();
     }
 
     Rectangle {
@@ -47,8 +47,8 @@ Item {
                 Rectangle {
                     anchors.fill: parent
                     anchors.margins: 2
-                    color: value > 0 ? "#80ff0000" : "#40000000"
-                    radius: 10
+                    color: value > 0 ? Qt.hsva(1 - (Math.log(value) / Math.LN2 / 11.0), Math.log(value) / Math.LN2 / 11.0, 1, 1): "#10000000"
+                    radius: width / 10
 
                     Text {
                         anchors.horizontalCenter: parent.horizontalCenter
@@ -60,10 +60,8 @@ Item {
                     }
                 }
             }
+
             model: game
         }
-
-
     }
-
 }

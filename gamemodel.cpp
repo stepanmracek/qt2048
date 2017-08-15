@@ -5,6 +5,7 @@
 GameModel::GameModel(int size, QObject *parent):
 	QAbstractListModel(parent),
 	_size(size),
+	_score(0),
 	_data(size * size)
 { }
 
@@ -31,17 +32,15 @@ bool GameModel::setData(const QModelIndex &index, const QVariant &value, int rol
 			QVector<int> roles;
 			roles << ValueRole;
 			emit dataChanged(index, index, roles);
+			return true;
 		}
-		return true;
-	} else {
 		return false;
 	}
+	return false;
 }
 
-void GameModel::setData(int row, int col, int value) {
-	int i = _size * row + col;
-	QModelIndex idx = index(i);
-	setData(idx, value, ValueRole);
+bool GameModel::setData(int row, int col, int value) {
+	return setData(index(_size * row + col), value, ValueRole);
 }
 
 Qt::ItemFlags GameModel::flags(const QModelIndex &index) const {
@@ -63,7 +62,7 @@ void GameModel::print() {
 	}
 }
 
-void GameModel::playerMove(int direction) {
+bool GameModel::playerMove(int direction) {
 	int start = 0;
 	int step = 1;
 	if (direction == Direction::Down || direction == Direction::Right) {
@@ -71,6 +70,7 @@ void GameModel::playerMove(int direction) {
 		step = -1;
 	}
 
+	bool change = false;
 	for (int c = 0; c < _size; c++) {
 		QVector<int> newValues;
 		int lastVal = -1;
@@ -84,6 +84,7 @@ void GameModel::playerMove(int direction) {
 
 			} else if (lastVal == val) {
 				newValues.push_back(2 * val);
+				setScore(_score + 2 * val);
 				lastVal = -1;
 			} else {
 				if (lastVal > 0)
@@ -99,11 +100,12 @@ void GameModel::playerMove(int direction) {
 		newValues.resize(_size);
 		for (int tmp = 0, r = start; tmp < _size; tmp++, r = r + step) {
 			if (direction == Direction::Up || direction == Direction::Down)
-				setData(r, c, newValues[tmp]);
+				change = change | setData(r, c, newValues[tmp]);
 			else
-				setData(c, r, newValues[tmp]);
+				change = change | setData(c, r, newValues[tmp]);
 		}
 	}
+	return change;
 }
 
 bool GameModel::computerMove() {
@@ -118,4 +120,21 @@ bool GameModel::computerMove() {
 
 	setData(free[rand() % free.size()], 2, ValueRole);
 	return true;
+}
+
+void GameModel::setScore(int score) {
+	if (_score != score) {
+		_score = score;
+		emit scoreChanged(score);
+	}
+}
+
+int GameModel::score() { return _score; }
+
+void GameModel::reset() {
+	_data = QVector<int>(_size * _size);
+	_score = 0;
+
+	computerMove();
+	computerMove();
 }
